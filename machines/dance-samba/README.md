@@ -1,5 +1,9 @@
 # 💣 Dance-Samba — Pentesting Lab (Full Attack Chain)
 
+🇬🇧 English version below  
+🇪🇸 Versión en español más abajo
+
+
 > ⚠️ No exploits. No CVEs. Just bad practices chained together.
 
 ---
