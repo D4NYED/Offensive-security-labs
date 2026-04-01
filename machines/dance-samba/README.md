@@ -1,413 +1,204 @@
-# 🛡️ Dance-Samba - Security Analysis
+# 💣 Dance-Samba — Pentesting Lab (Full Attack Chain)
 
-🇬🇧 English version below  
-🇪🇸 Versión en español más abajo
-
-## 📌 Scenario
-
-A Linux-based target exposes multiple services (FTP, SMB, SSH).
-The goal is to identify the attack path, gain access and escalate privileges to root.
+> ⚠️ No exploits. No CVEs. Just bad practices chained together.
 
 ---
 
-## 🎯 Objective
+## 📌 Overview
 
-* Identify initial access vector
-* Analyze privilege escalation path
-* Determine system weaknesses
+This lab demonstrates how a system can be fully compromised through:
 
----
+* Information disclosure
+* Credential reuse
+* Weak privilege configuration
 
-## 🧰 Tools Used
-
-* nmap
-* smbclient
-* ftp
-* ssh
-* base32 / base64 decoding
-* GTFOBins
+👉 Result: **Full root compromise without complex exploitation**
 
 ---
 
-## 🔍 Analysis
-
-### 1. Initial Access
-
-**Description:**
-Anonymous FTP access reveals a clue that can be used as credentials.
-
-**Evidence:**
+## ⚔️ Attack Summary
 
 ```text
-"Macarena está obsesionada con donald"
-```
-
-```bash
-macarena:donald
-```
-
-👉 Credentials reused successfully via SMB.
-
-**Conclusion:**
-Weak credential management → **Credential Reuse vulnerability**
-
----
-
-### 2. Execution
-
-**Description:**
-Access to the system is obtained via SSH using discovered credentials.
-
-```bash
-ssh macarena@target
+FTP (anonymous) → Information leak
+        ↓
+Credential reuse (macarena:donald)
+        ↓
+SMB → Validation
+        ↓
+SSH → Initial foothold
+        ↓
+Encoded credentials discovery
+        ↓
+Base32 + Base64 decoding
+        ↓
+Sudo misconfiguration (file)
+        ↓
+ROOT
 ```
 
 ---
 
-### 3. Persistence
+## 🎯 Key Skills Demonstrated
 
-**Description:**
-SSH access provides stable persistence on the system.
-
----
-
-### 4. Internal Enumeration
-
-**Description:**
-A file containing encoded data is discovered.
-
-**Evidence:**
-
-```bash
-/home/secret/hash
-```
-
-Decoding process:
-
-```bash
-Base32 → Base64 → supersecurepassword
-```
-
-👉 Chained encoding used to hide credentials.
+* Service enumeration (FTP, SMB, SSH)
+* Credential analysis & reuse
+* Encoding identification & decoding
+* Privilege escalation via GTFOBins
+* Attack chain reasoning
 
 ---
 
-### 5. Privilege Escalation
+## 🔍 Key Weaknesses
 
-**Description:**
-User has sudo permissions over the `file` binary.
+* Anonymous FTP exposing sensitive information
+* Weak and predictable credentials
+* Credential reuse across services
+* Misconfigured sudo permissions
+* Lack of execution restrictions
 
-**Evidence:**
+---
 
-```bash
-sudo -l
-```
+## 💣 Impact
 
-```bash
-(ALL) NOPASSWD: /usr/bin/file
-```
+* Full system compromise
+* Access to sensitive files
+* Credential disclosure
+* Potential lateral movement
 
-**Exploitation:**
+---
 
-```bash
-sudo file -f /opt/password.txt
-```
+## 🧠 Why This Matters
 
-**Result:**
+> Real-world attacks rarely rely on 0days.
+
+This lab shows that:
+
+* Enumeration is more valuable than exploitation
+* Context beats tooling
+* Misconfigurations are often enough
+
+---
+
+## 📁 Project Structure
 
 ```text
-root:rooteable2
+00_scope/                 → Scope definition
+01_recon/                 → Service discovery
+02_enum/                  → Service enumeration
+03_initial_access/        → Initial foothold
+04_privilege_escalation/  → Root escalation
+05_post_exploitation/     → Impact validation
+06_loot/                  → Extracted data
+07_reporting/             → Security report
+99_summary/               → Attack overview
+99_lessons_learned/       → Key insights
 ```
-
-👉 Abuse of allowed binary via GTFOBins.
-
----
-
-### 6. Data Access
-
-**Description:**
-Root access is achieved and sensitive files are accessed.
-
-```bash
-su root
-```
-
----
-
-### 7. Trick / Deception
-
-**Description:**
-A fake flag is present to mislead the attacker.
-
-```bash
-/root/root.txt       → fake
-/root/true_root.txt  → real
-```
-
----
-
-## 📁 Key Findings
-
-* Initial access: FTP + credential reuse
-* Protocols: FTP, SMB, SSH
-* Vulnerability: Weak credentials
-* PrivEsc: Sudo misconfiguration (`file`)
-* Technique: Chained encoding
-
----
-
-## 🧠 Attack Chain
-
-1. Anonymous FTP → information disclosure
-2. Credential reuse (macarena:donald)
-3. SMB access → pivot
-4. SSH access → persistence
-5. Discovery of encoded credentials
-6. Base32 + Base64 decoding
-7. Sudo abuse via GTFOBins (`file`)
-8. Root access
-
----
-
-## 🛡️ Mitigation
-
-* Disable anonymous FTP access
-* Enforce strong password policies
-* Avoid credential reuse
-* Restrict sudo permissions
-* Monitor abnormal privilege usage
-* Validate allowed binaries
 
 ---
 
 ## 📸 Evidence
 
-### Initial Access
-
-![FTP](evidence/ftp.png)
-
----
-
-### Enumeration
-
-![Enumeration](evidence/enumeration.png)
-
----
-
-### Privilege Escalation
-
-![PrivEsc](evidence/privesc.png)
+| Phase                | Description               |
+| -------------------- | ------------------------- |
+| Recon                | Service discovery         |
+| Enumeration          | Credential identification |
+| Privilege Escalation | Sudo abuse                |
 
 ---
 
 ## 🚀 Key Takeaway
 
-> This lab highlights how simple weaknesses like credential reuse and poor sudo configurations can lead to full system compromise.
-> Proper enumeration and understanding of system context are more critical than complex exploits.
->
-> ---
->
-> # 🛡️ Dance-Samba - Análisis de Seguridad
-
-## 📌 Escenario
-
-Máquina Linux con múltiples servicios expuestos (FTP, SMB, SSH).
-El objetivo es identificar la cadena de ataque, obtener acceso al sistema y escalar privilegios hasta root.
+> You don’t need advanced exploits to break a system.
+> You need visibility, context, and the ability to connect the dots.
 
 ---
 
-## 🎯 Objetivo
+---
 
-* Identificar el vector de acceso inicial
-* Analizar la escalada de privilegios
-* Determinar debilidades del sistema
+# 🛡️ Dance-Samba — Análisis de Seguridad
+
+> ⚠️ Sin exploits complejos. Solo malas prácticas encadenadas.
 
 ---
 
-## 🧰 Herramientas utilizadas
+## 📌 Resumen
 
-* nmap
-* smbclient
-* ftp
-* ssh
-* base32 / base64
-* GTFOBins
+Este laboratorio demuestra cómo un sistema puede ser comprometido completamente mediante:
+
+* Exposición de información
+* Reutilización de credenciales
+* Mala configuración de privilegios
+
+👉 Resultado: **Compromiso total del sistema (root)**
 
 ---
 
-## 🔍 Análisis
-
-### 1. Acceso inicial
-
-**Descripción:**
-El servicio FTP permite acceso anónimo y expone una pista útil.
-
-**Evidencia:**
+## ⚔️ Cadena de ataque
 
 ```text
-"Macarena está obsesionada con donald"
-```
-
-```bash
-macarena:donald
-```
-
-👉 Las credenciales se reutilizan con éxito en SMB.
-
-**Conclusión:**
-Gestión débil de credenciales → **Vulnerabilidad de Credential Reuse**
-
----
-
-### 2. Ejecución
-
-**Descripción:**
-Se obtiene acceso al sistema mediante SSH.
-
-```bash
-ssh macarena@target
+FTP anónimo → fuga de información
+        ↓
+Reutilización de credenciales
+        ↓
+SMB → validación
+        ↓
+SSH → acceso inicial
+        ↓
+Credenciales codificadas
+        ↓
+Decoding Base32 + Base64
+        ↓
+Sudo mal configurado (file)
+        ↓
+ROOT
 ```
 
 ---
 
-### 3. Persistencia
+## 🎯 Habilidades demostradas
 
-**Descripción:**
-El acceso por SSH permite mantener sesión estable en el sistema.
-
----
-
-### 4. Enumeración interna
-
-**Descripción:**
-Se localiza un archivo con información codificada.
-
-**Evidencia:**
-
-```bash
-/home/secret/hash
-```
-
-Proceso de decodificación:
-
-```bash
-Base32 → Base64 → supersecurepassword
-```
-
-👉 Uso de encoding encadenado para ocultar credenciales.
+* Enumeración de servicios
+* Análisis de credenciales
+* Interpretación de encoding
+* Escalada de privilegios (GTFOBins)
+* Pensamiento ofensivo
 
 ---
 
-### 5. Escalada de privilegios
+## 🔍 Debilidades clave
 
-**Descripción:**
-El usuario tiene permisos sudo sobre el binario `file`.
-
-**Evidencia:**
-
-```bash
-sudo -l
-```
-
-```bash
-(ALL) NOPASSWD: /usr/bin/file
-```
-
-**Explotación:**
-
-```bash
-sudo file -f /opt/password.txt
-```
-
-**Resultado:**
-
-```text
-root:rooteable2
-```
-
-👉 Abuso de binarios permitidos → técnica GTFOBins
+* FTP anónimo
+* Contraseñas débiles
+* Reutilización de credenciales
+* Sudo mal configurado
+* Falta de controles básicos
 
 ---
 
-### 6. Acceso a datos
+## 💣 Impacto
 
-**Descripción:**
-Se obtiene acceso como root y se accede a archivos sensibles.
-
-```bash
-su root
-```
+* Compromiso completo del sistema
+* Acceso a datos sensibles
+* Posible movimiento lateral
+* Exposición de credenciales
 
 ---
 
-### 7. Engaño final
+## 🧠 Por qué importa
 
-**Descripción:**
-Existe una flag falsa para despistar.
+> La mayoría de ataques reales no usan exploits complejos.
 
-```bash
-/root/root.txt       → falso
-/root/true_root.txt  → real
-```
+Este lab demuestra que:
 
----
-
-## 📁 Hallazgos clave
-
-* Acceso inicial: FTP + reutilización de credenciales
-* Servicios: FTP, SMB, SSH
-* Vulnerabilidad: credenciales débiles
-* Escalada: sudo mal configurado (`file`)
-* Técnica: encoding encadenado
-
----
-
-## 🧠 Cadena de ataque
-
-1. FTP anónimo → fuga de información
-2. Reutilización de credenciales (macarena:donald)
-3. Acceso SMB
-4. Acceso SSH → persistencia
-5. Descubrimiento de credencial codificada
-6. Decodificación Base32 + Base64
-7. Abuso de sudo (`file`)
-8. Acceso root
-
----
-
-## 🛡️ Mitigación
-
-* Deshabilitar FTP anónimo
-* Aplicar políticas de contraseñas robustas
-* Evitar reutilización de credenciales
-* Restringir permisos sudo
-* Monitorizar uso de privilegios
-* Validar binarios permitidos
-
----
-
-## 📸 Evidencia
-
-### Acceso inicial
-
-![FTP](evidence/ftp.png)
-
----
-
-### Enumeración
-
-![Enumeración](evidence/enumeration.png)
-
----
-
-### Escalada de privilegios
-
-![PrivEsc](evidence/privesc.png)
+* Enumerar bien > explotar
+* El contexto es clave
+* Las malas configuraciones son suficientes
 
 ---
 
 ## 🚀 Conclusión
 
-> Este laboratorio demuestra cómo debilidades simples como la reutilización de credenciales y una mala configuración de sudo pueden derivar en una comprometida total del sistema.
-> La enumeración y el contexto son más importantes que la explotación compleja.
+> No hace falta romper el sistema.
+> Muchas veces, el sistema ya está roto.
+
 
